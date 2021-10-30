@@ -19,3 +19,4 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+        EVENT_NAME: ${{ github.event_name }}
