@@ -12,6 +12,10 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: 'Link to Action: https://github.com/suzuki-shunsuke/github-action-tflint'
+      run: echo "::debug::Link to Action https://github.com/suzuki-shunsuke/github-action-tflint"
+      shell: bash
+
     - run: |
         echo "::error ::github_token is required. https://github.com/suzuki-shunsuke/github-action-tflint"
         exit 1
@@ -31,31 +35,21 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working_directory }}
 
-    - name: tflint (push event)
-      if: github.event_name != 'pull_request'
-      run: |
-        tflint --format=checkstyle --module . |
-          reviewdog -f=checkstyle \
-            -name="tflint" \
-            -filter-mode=nofilter \
-            -reporter=github-check \
-            -level=warning \
-            -fail-on-error=1
+    - name: tflint
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
-    - name: tflint (pull_request event)
-      if: github.event_name == 'pull_request'
       run: |
+        reporter=github-check
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          reporter=github-pr-review
+        fi
+
         tflint --format=checkstyle --module . |
           reviewdog -f=checkstyle \
             -name="tflint" \
             -filter-mode=nofilter \
-            -reporter=github-pr-review \
+            -reporter="$reporter" \
             -level=warning \
             -fail-on-error=1
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
