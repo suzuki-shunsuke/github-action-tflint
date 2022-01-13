@@ -3,20 +3,59 @@ description: tflint action
 inputs:
   github_token:
     description: 'GitHub Access Token'
-    required: true
+    required: false
+    default: ${{ github.token }}
   working_directory:
     description: 'Working Directory'
-    required: true
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
+    - run: |
+        echo "::error ::github_token is required. https://github.com/suzuki-shunsuke/github-action-tflint"
+        exit 1
+      shell: bash
+      if: inputs.github_token == ''
+
+    - name: check tflint is installed
+      run: tflint -v
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+    - name: check reviewdog is installed
+      run: reviewdog -version
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+
     - run: tflint --init
       shell: bash
       working-directory: ${{ inputs.working_directory }}
-    - run: bash ${{ github.action_path }}/main.sh
+
+    - name: tflint (push event)
+      if: github.event_name != 'pull_request'
+      run: |
+        tflint --format=checkstyle --module . |
+          reviewdog -f=checkstyle \
+            -name="tflint" \
+            -filter-mode=nofilter \
+            -reporter=github-check \
+            -level=warning \
+            -fail-on-error=1
       shell: bash
       working-directory: ${{ inputs.working_directory }}
       env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
-        EVENT_NAME: ${{ github.event_name }}
+    - name: tflint (pull_request event)
+      if: github.event_name == 'pull_request'
+      run: |
+        tflint --format=checkstyle --module . |
+          reviewdog -f=checkstyle \
+            -name="tflint" \
+            -filter-mode=nofilter \
+            -reporter=github-pr-review \
+            -level=warning \
+            -fail-on-error=1
+      shell: bash
+      working-directory: ${{ inputs.working_directory }}
+      env:
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
