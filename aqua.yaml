@@ -1,0 +1,11 @@
+---
+# aqua - Declarative CLI Version Manager
+# https://aquaproj.github.io/
+registries:
+- type: standard
+  ref: v0.14.0 # renovate: depName=aquaproj/aqua-registry
+
+packages:
+- name: rhysd/actionlint@v1.6.8
+- name: reviewdog/reviewdog@v0.13.1
+- name: terraform-linters/tflint@v0.34.1
