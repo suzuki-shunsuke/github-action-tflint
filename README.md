@@ -21,11 +21,11 @@ This GitHub Actions does **not** install tflint, so we can install them outside 
 ## Example
 
 ```yaml
-- name: suzuki-shunsuke/github-action-tflint@v0.1.1
+- uses: suzuki-shunsuke/github-action-tflint@v0.1.1
 ```
 
 ```yaml
-- name: suzuki-shunsuke/github-action-tflint@v0.1.1
+- uses: suzuki-shunsuke/github-action-tflint@v0.1.1
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     working_directory: foo
