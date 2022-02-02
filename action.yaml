@@ -10,46 +10,5 @@ inputs:
     required: false
     default: ""
 runs:
-  using: composite
-  steps:
-    - name: 'Link to Action: https://github.com/suzuki-shunsuke/github-action-tflint'
-      run: echo "::debug::Link to Action https://github.com/suzuki-shunsuke/github-action-tflint"
-      shell: bash
-
-    - run: |
-        echo "::error ::github_token is required. https://github.com/suzuki-shunsuke/github-action-tflint"
-        exit 1
-      shell: bash
-      if: inputs.github_token == ''
-
-    - name: check tflint is installed
-      run: tflint -v
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-    - name: check reviewdog is installed
-      run: reviewdog -version
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-
-    - run: tflint --init
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-
-    - name: tflint
-      shell: bash
-      working-directory: ${{ inputs.working_directory }}
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
-      run: |
-        reporter=github-check
-        if [ "${{ github.event_name }}" = "pull_request" ]; then
-          reporter=github-pr-review
-        fi
-
-        tflint --format=checkstyle --module . |
-          reviewdog -f=checkstyle \
-            -name="tflint" \
-            -filter-mode=nofilter \
-            -reporter="$reporter" \
-            -level=warning \
-            -fail-on-error=1
+  using: node16
+  main: dist/index.js
