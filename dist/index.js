@@ -9671,7 +9671,9 @@ function getURL(result) {
 }
 const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     core.info('Running tflint --init');
-    yield exec.exec('tflint', ['--init']);
+    yield exec.exec('tflint', ['--init'], {
+        cwd: inputs.workingDirectory,
+    });
     core.info('Running tflint');
     const out = yield exec.getExecOutput('tflint', ['--format', 'json', '--module', '.'], {
         cwd: inputs.workingDirectory,
@@ -9736,6 +9738,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     core.info('Running reviewdog');
     yield exec.exec('reviewdog', ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning', '-fail-on-error', '1'], {
         input: Buffer.from(reviewDogInput),
+        cwd: inputs.workingDirectory,
         env: Object.assign(Object.assign({}, process.env), { REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken }),
     });
 });

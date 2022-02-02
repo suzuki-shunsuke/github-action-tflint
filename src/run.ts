@@ -29,7 +29,9 @@ function getURL(result: any): string {
 
 export const run = async (inputs: Inputs): Promise<void> => {
   core.info('Running tflint --init');
-  await exec.exec('tflint', ['--init']);
+  await exec.exec('tflint', ['--init'], {
+    cwd: inputs.workingDirectory,
+  });
   core.info('Running tflint');
   const out = await exec.getExecOutput('tflint', ['--format', 'json', '--module', '.'], {
     cwd: inputs.workingDirectory,
@@ -94,6 +96,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
   core.info('Running reviewdog');
   await exec.exec('reviewdog', ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning', '-fail-on-error', '1'], {
     input: Buffer.from(reviewDogInput),
+    cwd: inputs.workingDirectory,
     env: {
       ...process.env,
       REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken,
