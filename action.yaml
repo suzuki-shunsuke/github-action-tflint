@@ -9,6 +9,10 @@ inputs:
     description: 'Working Directory'
     required: false
     default: ""
+  github_comment:
+    description: 'Whether a comment is posted with github-comment'
+    required: false
+    default: 'false'
 runs:
   using: node16
   main: dist/index.js
