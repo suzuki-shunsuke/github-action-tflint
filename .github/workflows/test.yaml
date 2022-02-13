@@ -19,3 +19,4 @@ jobs:
     - uses: ./
       with:
         working_directory: tests
+        github_comment: true

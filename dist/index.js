@@ -9606,6 +9606,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, run_1.run)({
         workingDirectory: core.getInput('working_directory', { required: true }),
         githubToken: core.getInput('github_token', { required: true }),
+        githubComment: core.getBooleanInput('github_comment', { required: true }),
     });
 });
 main().catch((e) => core.setFailed(e instanceof Error ? e.message : JSON.stringify(e)));
@@ -9661,13 +9662,54 @@ function getSeverity(s) {
     if (s == 'info') {
         return 'INFO';
     }
-    return null;
-}
-function getURL(result) {
-    if (result.links && result.links.length != 0) {
-        return result.links[0];
-    }
     return '';
+}
+class DiagnosticCode {
+    constructor() {
+        this.value = '';
+        this.url = '';
+    }
+}
+class DiagnosticLocation {
+    constructor() {
+        this.path = '';
+        this.range = new DiagnosticLocationRange();
+    }
+}
+class DiagnosticLocationRange {
+    constructor() {
+        this.start = new DiagnosticLocationRangePoint();
+        this.end = new DiagnosticLocationRangePoint();
+    }
+}
+class DiagnosticLocationRangePoint {
+    constructor() {
+        this.line = 0;
+    }
+}
+class Diagnostic {
+    constructor() {
+        this.message = '';
+        this.code = new DiagnosticCode();
+        this.location = new DiagnosticLocation();
+        this.severity = '';
+    }
+}
+function generateTable(diagnostics) {
+    const lines = ['rule | severity | filepath | range | message', '--- | --- | --- | --- | ---'];
+    for (let i = 0; i < diagnostics.length; i++) {
+        const diagnostic = diagnostics[i];
+        let rule = diagnostic.code.value;
+        if (diagnostic.code.url) {
+            rule = `[${diagnostic.code.value}](${diagnostic.code.url})`;
+        }
+        let range = '';
+        if (diagnostic.location && diagnostic.location.range && diagnostic.location.range.start) {
+            range = `${diagnostic.location.range.start.line} ... ${diagnostic.location.range.end.line}`;
+        }
+        lines.push(`${rule} | ${diagnostic.severity} | ${diagnostic.location.path} | ${range} | ${diagnostic.message}`);
+    }
+    return lines.join('\n');
 }
 const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     core.info('Running tflint --init');
@@ -9681,7 +9723,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     });
     core.info('Parsing tflint result');
     const outJSON = JSON.parse(out.stdout);
-    const diagnostics = [];
+    const diagnostics = new Array();
     if (outJSON.issues) {
         for (let i = 0; i < outJSON.issues.length; i++) {
             const issue = outJSON.issues[i];
@@ -9709,22 +9751,28 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     if (outJSON.errors) {
         for (let i = 0; i < outJSON.errors.length; i++) {
             const err = outJSON.errors[i];
-            diagnostics.push({
-                message: err.message,
-                location: {
-                    path: err.range.filename,
-                    range: {
-                        start: {
-                            line: err.range.start.line,
-                        },
-                        end: {
-                            line: err.range.end.line,
-                        },
-                    },
-                },
-                severity: getSeverity(err.severity),
-            });
+            const diagnostic = new Diagnostic();
+            diagnostic.message = err.message;
+            diagnostic.location.path = err.range.filename;
+            diagnostic.location.range.start.line = err.range.start.line;
+            diagnostic.location.range.end.line = err.range.end.line;
+            diagnostic.severity = getSeverity(err.severity);
+            diagnostics.push(diagnostic);
         }
+    }
+    if (inputs.githubComment && diagnostics.length > 0) {
+        const table = generateTable(diagnostics);
+        const githubCommentTemplate = `## :x: tflint error
+
+{{template "link" .}} | [tflint](https://github.com/terraform-linters/tflint) | [tflint Annotations to disable rules](https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/annotations.md) | [tflint Config](https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/config.md)
+
+Working Directory: \`${inputs.workingDirectory}\`
+
+${table}`;
+        yield exec.exec('github-comment', ['post', '-stdin-template'], {
+            input: Buffer.from(githubCommentTemplate),
+            env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubToken }),
+        });
     }
     const reviewDogInput = JSON.stringify({
         source: {

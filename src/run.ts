@@ -1,13 +1,16 @@
 import * as exec from '@actions/exec';
 import * as core from '@actions/core';
 import * as github from '@actions/github';
+import * as fs from 'fs';
+import * as path from 'path';
 
 type Inputs = {
   workingDirectory: string
   githubToken: string
+  githubComment: boolean
 }
 
-function getSeverity(s: string): string | null {
+function getSeverity(s: string): string {
   if (s == 'error') {
     return 'ERROR';
   }
@@ -17,14 +20,53 @@ function getSeverity(s: string): string | null {
   if (s == 'info') {
     return 'INFO';
   }
-  return null;
+  return '';
 }
 
-function getURL(result: any): string {
-  if (result.links && result.links.length != 0) {
-    return result.links[0];
+class DiagnosticCode {
+  value = ''
+  url = ''
+}
+
+class DiagnosticLocation {
+  path = ''
+  range = new DiagnosticLocationRange()
+}
+
+class DiagnosticLocationRange {
+  start = new DiagnosticLocationRangePoint()
+  end = new DiagnosticLocationRangePoint()
+}
+
+class DiagnosticLocationRangePoint {
+  line = 0
+}
+
+class Diagnostic {
+  message = ''
+  code = new DiagnosticCode()
+  location = new DiagnosticLocation()
+  severity = ''
+}
+
+function generateTable(diagnostics: Array<Diagnostic>): string {
+  const lines: Array<string> = ['rule | severity | filepath | range | message', '--- | --- | --- | --- | ---'];
+  for (let i = 0; i < diagnostics.length; i++) {
+    const diagnostic = diagnostics[i];
+
+    let rule = diagnostic.code.value;
+    if (diagnostic.code.url) {
+      rule = `[${diagnostic.code.value}](${diagnostic.code.url})`;
+    }
+
+    let range = '';
+    if (diagnostic.location && diagnostic.location.range && diagnostic.location.range.start) {
+      range = `${diagnostic.location.range.start.line} ... ${diagnostic.location.range.end.line}`;
+    }
+
+    lines.push(`${rule} | ${diagnostic.severity} | ${diagnostic.location.path} | ${range} | ${diagnostic.message}`);
   }
-  return '';
+  return lines.join('\n');
 }
 
 export const run = async (inputs: Inputs): Promise<void> => {
@@ -39,7 +81,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
   });
   core.info('Parsing tflint result');
   const outJSON = JSON.parse(out.stdout);
-  const diagnostics = [];
+  const diagnostics = new Array<Diagnostic>();
   if (outJSON.issues) {
     for (let i = 0; i < outJSON.issues.length; i++) {
       const issue = outJSON.issues[i];
@@ -67,23 +109,34 @@ export const run = async (inputs: Inputs): Promise<void> => {
   if (outJSON.errors) {
     for (let i = 0; i < outJSON.errors.length; i++) {
       const err = outJSON.errors[i];
-      diagnostics.push({
-        message: err.message,
-        location: {
-          path: err.range.filename,
-          range: {
-            start: {
-              line: err.range.start.line,
-            },
-            end: {
-              line: err.range.end.line,
-            },
-          },
-        },
-        severity: getSeverity(err.severity),
-      });
+      const diagnostic = new Diagnostic();
+      diagnostic.message = err.message;
+      diagnostic.location.path = err.range.filename;
+      diagnostic.location.range.start.line = err.range.start.line;
+      diagnostic.location.range.end.line = err.range.end.line;
+      diagnostic.severity = getSeverity(err.severity);
+      diagnostics.push(diagnostic);
     }
   }
+
+  if (inputs.githubComment && diagnostics.length > 0) {
+    const table = generateTable(diagnostics);
+    const githubCommentTemplate = `## :x: tflint error
+
+{{template "link" .}} | [tflint](https://github.com/terraform-linters/tflint) | [tflint Annotations to disable rules](https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/annotations.md) | [tflint Config](https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/config.md)
+
+Working Directory: \`${inputs.workingDirectory}\`
+
+${table}`;
+    await exec.exec('github-comment', ['post', '-stdin-template'], {
+      input: Buffer.from(githubCommentTemplate),
+      env: {
+        ...process.env,
+        GITHUB_TOKEN: inputs.githubToken,
+      },
+    });
+  }
+
   const reviewDogInput = JSON.stringify({
     source: {
       name: 'tflint',
