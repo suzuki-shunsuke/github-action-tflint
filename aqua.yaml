@@ -6,7 +6,7 @@ registries:
   ref: v2.4.0 # renovate: depName=aquaproj/aqua-registry
 
 packages:
-- name: rhysd/actionlint@v1.6.11
+- name: rhysd/actionlint@v1.6.12
 - name: reviewdog/reviewdog@v0.14.0
 - name: terraform-linters/tflint@v0.35.0
 - name: suzuki-shunsuke/github-comment@v4.1.1
