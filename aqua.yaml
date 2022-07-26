@@ -9,4 +9,4 @@ packages:
 - name: rhysd/actionlint@v1.6.15
 - name: reviewdog/reviewdog@v0.14.1
 - name: terraform-linters/tflint@v0.38.1
-- name: suzuki-shunsuke/github-comment@v4.3.0
+- name: suzuki-shunsuke/github-comment@v4.4.0
