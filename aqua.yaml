@@ -8,5 +8,5 @@ registries:
 packages:
 - name: rhysd/actionlint@v1.6.22
 - name: reviewdog/reviewdog@v0.14.1
-- name: terraform-linters/tflint@v0.42.2
+- name: terraform-linters/tflint@v0.43.0
 - name: suzuki-shunsuke/github-comment@v4.5.2
