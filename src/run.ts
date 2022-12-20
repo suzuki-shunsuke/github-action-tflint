@@ -73,6 +73,10 @@ export const run = async (inputs: Inputs): Promise<void> => {
   core.info('Running tflint --init');
   await exec.exec('tflint', ['--init'], {
     cwd: inputs.workingDirectory,
+    env: {
+      ...process.env,
+      GITHUB_TOKEN: inputs.githubToken,
+    },
   });
   core.info('Running tflint');
   const out = await exec.getExecOutput('tflint', ['--format', 'json', '--module', '.'], {
