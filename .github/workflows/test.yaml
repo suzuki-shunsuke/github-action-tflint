@@ -1,5 +1,7 @@
 name: test
 
+permissions: {}
+
 on:
   pull_request:
     branches:
@@ -11,6 +13,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write # For reviewdog
     steps:
     - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
     - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
