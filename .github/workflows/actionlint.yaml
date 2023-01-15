@@ -1,29 +1,25 @@
+---
 name: actionlint
-
-permissions: {}
-
+env:
+  AQUA_POLICY_CONFIG: ${{ github.workspace }}/aqua-policy.yaml
 on:
   pull_request:
     branches:
     - main
     paths:
-    - .github/**
+    - .github/workflows/*.yaml
     - aqua/actionlint.yaml
+    - aqua/reviewdog.yaml
   push:
     branches:
     - main
     paths:
-    - .github/**
+    - .github/workflows/*.yaml
     - aqua/actionlint.yaml
-
+    - aqua/reviewdog.yaml
+permissions: {}
 jobs:
   test:
-    runs-on: ubuntu-latest
+    uses: suzuki-shunsuke/actionlint-workflow/.github/workflows/actionlint.yaml@31ce3ededd2a8e3037ed9ea42033a6ad0d137d2b # v0.1.0
     permissions:
-      pull-requests: write # For reviewdog
-    steps:
-    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
-    - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
-      with:
-        aqua_version: v1.31.0
-    - uses: suzuki-shunsuke/github-action-actionlint@764a394381fb91f87ca8a8ad022bbeb49232df8b # v0.1.2
+      pull-requests: write
