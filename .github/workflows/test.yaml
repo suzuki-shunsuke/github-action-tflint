@@ -3,12 +3,10 @@ name: test
 permissions: {}
 
 on:
-  pull_request:
-    branches:
-    - main
+  pull_request: {}
   push:
     branches:
-    - main
+      - main
 
 jobs:
   test:
@@ -16,11 +14,11 @@ jobs:
     permissions:
       pull-requests: write # For reviewdog
     steps:
-    - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
-    - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
-      with:
-        aqua_version: v1.32.3
-    - uses: ./
-      with:
-        working_directory: tests
-        github_comment: true
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3
+      - uses: aquaproj/aqua-installer@61e2563dfe7674cbf74fe6ec212e444198a3bb00 # v2.0.2
+        with:
+          aqua_version: v1.32.3
+      - uses: ./
+        with:
+          working_directory: tests
+          github_comment: true
