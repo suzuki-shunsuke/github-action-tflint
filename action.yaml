@@ -5,6 +5,9 @@ inputs:
     description: 'GitHub Access Token'
     required: false
     default: ${{ github.token }}
+  github_token_for_tflint_init:
+    description: GitHub Access Token for tflint --init. If this input isn't set, github_token is used
+    required: false
   working_directory:
     description: 'Working Directory'
     required: false

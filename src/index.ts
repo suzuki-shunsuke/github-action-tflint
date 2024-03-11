@@ -5,6 +5,7 @@ const main = async (): Promise<void> => {
   await run({
     workingDirectory: core.getInput('working_directory', { required: false }),
     githubToken: core.getInput('github_token', { required: true }),
+    githubTokenForTflintInit: core.getInput('github_token_for_tflint_init', { required: false }),
     githubComment: core.getBooleanInput('github_comment', { required: true }),
   })
 }

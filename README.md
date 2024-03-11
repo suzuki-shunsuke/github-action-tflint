@@ -52,6 +52,7 @@ This GitHub Actions does **not** install tflint, so we can install them outside 
 - uses: suzuki-shunsuke/github-action-tflint@v0.1.1
   with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
+    github_token_for_tflint_init: ${{ secrets.GH_TOKEN_FOR_TFLINT_INIT }}
     working_directory: foo
     github_comment: true
 ```
@@ -67,6 +68,7 @@ Nothing.
 name | default value | description
 --- | --- | ---
 github_token | `github.token` | GitHub Access Token
+github_token_for_tflint_init | `github_token` | GitHub Access Token for `tflint --init`. It this isn't set, the input `github_token` is used. This input is useful for a GitHub Enterprise Server
 working_directory | "" (current directory) | Woring Directory
 github_comment | `false` | Whether a comment is posted with github-comment
 

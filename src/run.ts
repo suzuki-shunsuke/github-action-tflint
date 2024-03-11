@@ -7,6 +7,7 @@ import * as path from 'path';
 type Inputs = {
   workingDirectory: string
   githubToken: string
+  githubTokenForTflintInit: string
   githubComment: boolean
 }
 
@@ -70,12 +71,15 @@ function generateTable(diagnostics: Array<Diagnostic>): string {
 }
 
 export const run = async (inputs: Inputs): Promise<void> => {
+  if (!inputs.githubTokenForTflintInit) {
+    inputs.githubTokenForTflintInit = inputs.githubToken;
+  }
   core.info('Running tflint --init');
   await exec.exec('tflint', ['--init'], {
     cwd: inputs.workingDirectory,
     env: {
       ...process.env,
-      GITHUB_TOKEN: inputs.githubToken,
+      GITHUB_TOKEN: inputs.githubTokenForTflintInit,
     },
   });
   core.info('Running tflint');
