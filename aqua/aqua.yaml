@@ -7,5 +7,5 @@ registries:
 
 packages:
 - import: imports/*.yaml
-- name: terraform-linters/tflint@v0.51.0
+- name: terraform-linters/tflint@v0.51.1
 - name: suzuki-shunsuke/github-comment@v6.0.4
