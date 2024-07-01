@@ -10,6 +10,6 @@
     "@types/node": "20.14.9"
   },
   "devDependencies": {
-    "typescript": "5.5.2"
+    "typescript": "5.5.3"
   }
 }
