@@ -8,4 +8,4 @@ registries:
 packages:
 - import: imports/*.yaml
 - name: terraform-linters/tflint@v0.52.0
-- name: suzuki-shunsuke/github-comment@v6.1.0
+- name: suzuki-shunsuke/github-comment@v6.2.0
