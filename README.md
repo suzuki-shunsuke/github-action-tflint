@@ -20,7 +20,7 @@ This GitHub Actions does **not** install tflint, so we can install them outside 
 
 ## Requirements
 
-* [tflint](https://github.com/terraform-linters/tflint)
+* [tflint](https://github.com/terraform-linters/tflint) >= [v0.50.0](https://github.com/terraform-linters/tflint/releases/tag/v0.50.0)
 * [reviewdog](https://github.com/reviewdog/reviewdog)
 * (Optional) [github-comment](https://github.com/suzuki-shunsuke/github-comment)
 

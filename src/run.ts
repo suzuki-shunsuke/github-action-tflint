@@ -83,7 +83,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     },
   });
   core.info('Running tflint');
-  const out = await exec.getExecOutput('tflint', ['--format', 'json', '--module'], {
+  const out = await exec.getExecOutput('tflint', ['--format', 'json', '--call-module-type=all'], {
     cwd: inputs.workingDirectory,
     ignoreReturnCode: true,
   });
