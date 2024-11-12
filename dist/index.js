@@ -30366,8 +30366,19 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
         cwd: inputs.workingDirectory,
         env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubTokenForTflintInit }),
     });
+    const args = ['--format', 'json'];
+    const help = yield exec.getExecOutput('tflint', ['--help'], {
+        cwd: inputs.workingDirectory,
+        silent: true,
+    });
+    if (help.stdout.includes('--call-module-type')) {
+        args.push('--call-module-type=all');
+    }
+    else {
+        args.push('--module');
+    }
     core.info('Running tflint');
-    const out = yield exec.getExecOutput('tflint', ['--format', 'json', '--call-module-type=all'], {
+    const out = yield exec.getExecOutput('tflint', args, {
         cwd: inputs.workingDirectory,
         ignoreReturnCode: true,
     });

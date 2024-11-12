@@ -82,8 +82,18 @@ export const run = async (inputs: Inputs): Promise<void> => {
       GITHUB_TOKEN: inputs.githubTokenForTflintInit,
     },
   });
+  const args = ['--format', 'json'];
+  const help = await exec.getExecOutput('tflint', ['--help'], {
+    cwd: inputs.workingDirectory,
+    silent: true,
+  });
+  if (help.stdout.includes('--call-module-type')) {
+    args.push('--call-module-type=all');
+  } else {
+    args.push('--module');
+  }
   core.info('Running tflint');
-  const out = await exec.getExecOutput('tflint', ['--format', 'json', '--call-module-type=all'], {
+  const out = await exec.getExecOutput('tflint', args, {
     cwd: inputs.workingDirectory,
     ignoreReturnCode: true,
   });

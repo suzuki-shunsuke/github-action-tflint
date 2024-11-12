@@ -6,6 +6,4 @@ registries:
   ref: v4.250.0 # renovate: depName=aquaproj/aqua-registry
 
 packages:
-- import: imports/*.yaml
-- name: terraform-linters/tflint@v0.54.0
-- name: suzuki-shunsuke/github-comment@v6.3.0
+  - import: imports/*.yaml

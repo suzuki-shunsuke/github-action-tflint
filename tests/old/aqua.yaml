@@ -1,0 +1,10 @@
+---
+# aqua - Declarative CLI Version Manager
+# https://aquaproj.github.io/
+registries:
+  - type: standard
+    ref: v4.249.0 # renovate: depName=aquaproj/aqua-registry
+
+packages:
+  - name: terraform-linters/tflint
+    version: v0.49.0
