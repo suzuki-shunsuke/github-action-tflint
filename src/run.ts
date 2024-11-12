@@ -85,6 +85,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
   const args = ['--format', 'json'];
   const help = await exec.getExecOutput('tflint', ['--help'], {
     cwd: inputs.workingDirectory,
+    silent: true,
   });
   if (help.stdout.includes('--call-module-type')) {
     args.push('--call-module-type=all');
