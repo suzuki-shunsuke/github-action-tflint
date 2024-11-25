@@ -83,6 +83,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     },
   });
   const args = ['--format', 'json'];
+
   const help = await exec.getExecOutput('tflint', ['--help'], {
     cwd: inputs.workingDirectory,
     silent: true,
@@ -92,6 +93,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
   } else {
     args.push('--module');
   }
+
   core.info('Running tflint');
   const out = await exec.getExecOutput('tflint', args, {
     cwd: inputs.workingDirectory,
@@ -165,7 +167,20 @@ ${table}`;
   const reporter = github.context.eventName == 'pull_request' ? 'github-pr-review' : 'github-check';
   core.info(`Reviewdog input: ${reviewDogInput}`);
   core.info('Running reviewdog');
-  await exec.exec('reviewdog', ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning', '-fail-on-error', '1'], {
+
+  const reviewdogArgs = ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning'];
+  const reviewdogHelp = await exec.getExecOutput('reviewdog', ['--help'], {
+    cwd: inputs.workingDirectory,
+    silent: true,
+    ignoreReturnCode: true,
+  });
+  if (reviewdogHelp.stdout.includes('-fail-level') || reviewdogHelp.stderr.includes('-fail-level')) {
+    reviewdogArgs.push('-fail-level', 'error');
+  } else {
+    reviewdogArgs.push('-fail-on-error', '1');
+  }
+
+  await exec.exec('reviewdog', reviewdogArgs, {
     input: Buffer.from(reviewDogInput),
     cwd: inputs.workingDirectory,
     env: {

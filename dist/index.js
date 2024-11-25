@@ -30445,7 +30445,19 @@ ${table}`;
     const reporter = github.context.eventName == 'pull_request' ? 'github-pr-review' : 'github-check';
     core.info(`Reviewdog input: ${reviewDogInput}`);
     core.info('Running reviewdog');
-    yield exec.exec('reviewdog', ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning', '-fail-on-error', '1'], {
+    const reviewdogArgs = ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning'];
+    const reviewdogHelp = yield exec.getExecOutput('reviewdog', ['--help'], {
+        cwd: inputs.workingDirectory,
+        silent: true,
+        ignoreReturnCode: true,
+    });
+    if (reviewdogHelp.stdout.includes('-fail-level') || reviewdogHelp.stderr.includes('-fail-level')) {
+        reviewdogArgs.push('-fail-level', 'error');
+    }
+    else {
+        reviewdogArgs.push('-fail-on-error', '1');
+    }
+    yield exec.exec('reviewdog', reviewdogArgs, {
         input: Buffer.from(reviewDogInput),
         cwd: inputs.workingDirectory,
         env: Object.assign(Object.assign({}, process.env), { REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken }),
