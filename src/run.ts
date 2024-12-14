@@ -161,6 +161,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     });
     const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
     if (changedFiles.length !== 0) {
+      const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
       await exec.exec('aqua', [
         '-c', `${ghActionPath}/aqua/aqua.yaml`,
         'exec', '--',
@@ -169,7 +170,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
         'exec', '--',
         'ghcp', 'commit',
         '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
-        '-b', github.context.ref,
+        '-b', branch,
         '-m', 'fix(tflint): auto fix',
       ].concat(changedFiles), {
         env: {

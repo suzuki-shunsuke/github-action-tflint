@@ -30445,6 +30445,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
         });
         const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
         if (changedFiles.length !== 0) {
+            const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
             yield exec.exec('aqua', [
                 '-c', `${ghActionPath}/aqua/aqua.yaml`,
                 'exec', '--',
@@ -30453,7 +30454,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
                 'exec', '--',
                 'ghcp', 'commit',
                 '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
-                '-b', github.context.ref,
+                '-b', branch,
                 '-m', 'fix(tflint): auto fix',
             ].concat(changedFiles), {
                 env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubTokenForFix }),
