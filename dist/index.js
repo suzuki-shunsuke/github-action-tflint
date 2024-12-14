@@ -30436,18 +30436,26 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     }
     if (inputs.fix) {
         const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
-        yield exec.exec('aqua', [
-            '-c', `${ghActionPath}/aqua/aqua.yaml`,
-            'exec', '--',
-            'github-comment', 'exec', '--',
-            'ghcp', 'commit',
-            '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
-            '-b', github.context.ref,
-            '-m', 'fix(tflint): auto fix',
+        const out = yield exec.getExecOutput('git', [
+            'diff', '--name-only',
         ].concat([...files]), {
-            env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubTokenForFix }),
+            ignoreReturnCode: true,
         });
-        throw new Error("code is fixed by tflint --fix");
+        const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
+        if (changedFiles.length !== 0) {
+            yield exec.exec('aqua', [
+                '-c', `${ghActionPath}/aqua/aqua.yaml`,
+                'exec', '--',
+                'github-comment', 'exec', '--',
+                'ghcp', 'commit',
+                '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
+                '-b', github.context.ref,
+                '-m', 'fix(tflint): auto fix',
+            ].concat(changedFiles), {
+                env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubTokenForFix }),
+            });
+            throw new Error("code is fixed by tflint --fix");
+        }
     }
     if (inputs.githubComment && diagnostics.length > 0) {
         const table = generateTable(diagnostics);
