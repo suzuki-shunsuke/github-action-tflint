@@ -31,7 +31,7 @@ runs:
         aqua_version: v2.39.0
         skip_install_aqua: "true"
         enable_aqua_install: "false"
-    - run: node dist/index.js
+    - run: node "$GITHUB_ACTION_PATH/dist/index.js"
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github_token }}
