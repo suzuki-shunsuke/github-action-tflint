@@ -30249,6 +30249,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         githubToken: core.getInput('github_token', { required: true }),
         githubTokenForTflintInit: core.getInput('github_token_for_tflint_init', { required: false }),
         githubComment: core.getBooleanInput('github_comment', { required: true }),
+        githubTokenForFix: core.getInput('github_token_for_fix', { required: false }),
+        fix: core.getBooleanInput('fix', { required: true }),
     });
 });
 main().catch((e) => core.setFailed(e instanceof Error ? e.message : JSON.stringify(e)));
@@ -30298,6 +30300,7 @@ exports.run = void 0;
 const exec = __importStar(__nccwpck_require__(1514));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const path = __importStar(__nccwpck_require__(1017));
 function getSeverity(s) {
     if (s == 'error') {
         return 'ERROR';
@@ -30361,6 +30364,9 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     if (!inputs.githubTokenForTflintInit) {
         inputs.githubTokenForTflintInit = inputs.githubToken;
     }
+    if (!inputs.githubTokenForFix) {
+        inputs.githubTokenForFix = inputs.githubToken;
+    }
     core.info('Running tflint --init');
     yield exec.exec('tflint', ['--init'], {
         cwd: inputs.workingDirectory,
@@ -30376,6 +30382,9 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
     }
     else {
         args.push('--module');
+    }
+    if (inputs.fix) {
+        args.push('--fix');
     }
     core.info('Running tflint');
     const out = yield exec.getExecOutput('tflint', args, {
@@ -30421,6 +30430,25 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
             diagnostics.push(diagnostic);
         }
     }
+    const ghActionPath = process.env.GITHUB_ACTION_PATH;
+    if (ghActionPath === undefined) {
+        throw new Error('GITHUB_ACTION_PATH is not defined');
+    }
+    if (inputs.fix) {
+        const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
+        yield exec.exec('aqua', [
+            '-c', `${ghActionPath}/aqua/aqua.yaml`,
+            'exec', '--',
+            'github-comment', 'exec', '--',
+            'ghcp', 'commit',
+            '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
+            '-b', github.context.ref,
+            '-m', 'fix(tflint): auto fix',
+        ].concat([...files]), {
+            env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubTokenForFix }),
+        });
+        throw new Error("code is fixed by tflint --fix");
+    }
     if (inputs.githubComment && diagnostics.length > 0) {
         const table = generateTable(diagnostics);
         const githubCommentTemplate = `## :x: tflint error
@@ -30430,7 +30458,11 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
 Working Directory: \`${inputs.workingDirectory}\`
 
 ${table}`;
-        yield exec.exec('github-comment', ['post', '-stdin-template'], {
+        yield exec.exec('aqua', [
+            '-c', `${ghActionPath}/aqua/aqua.yaml`,
+            'exec', '--',
+            'github-comment', 'post', '-stdin-template',
+        ], {
             input: Buffer.from(githubCommentTemplate),
             env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubToken }),
         });
@@ -30445,25 +30477,24 @@ ${table}`;
     const reporter = github.context.eventName == 'pull_request' ? 'github-pr-review' : 'github-check';
     core.info(`Reviewdog input: ${reviewDogInput}`);
     core.info('Running reviewdog');
-    const reviewdogArgs = ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning'];
-    const reviewdogHelp = yield exec.getExecOutput('reviewdog', ['--help'], {
-        cwd: inputs.workingDirectory,
-        silent: true,
-        ignoreReturnCode: true,
-    });
-    if (reviewdogHelp.stdout.includes('-fail-level') || reviewdogHelp.stderr.includes('-fail-level')) {
-        reviewdogArgs.push('-fail-level', 'error');
-    }
-    else {
-        reviewdogArgs.push('-fail-on-error', '1');
-    }
-    yield exec.exec('reviewdog', reviewdogArgs, {
+    const reviewdogArgs = [
+        '-c', `${ghActionPath}/aqua/aqua.yaml`,
+        'exec', '--',
+        'reviewdog',
+        '-f', 'rdjson',
+        '-name', 'tflint',
+        '-filter-mode', 'nofilter',
+        '-reporter', reporter,
+        '-level', 'warning',
+        '-fail-level', 'error'
+    ];
+    yield exec.exec('aqua', reviewdogArgs, {
         input: Buffer.from(reviewDogInput),
         cwd: inputs.workingDirectory,
         env: Object.assign(Object.assign({}, process.env), { REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken }),
     });
     if (out.exitCode != 0) {
-        throw "tflint failed";
+        throw new Error("tflint failed");
     }
 });
 exports.run = run;

@@ -151,7 +151,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     throw new Error('GITHUB_ACTION_PATH is not defined');
   }
   if (inputs.fix) {
-    const files = diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path));
+    const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
     await exec.exec('aqua', [
       '-c', `${ghActionPath}/aqua/aqua.yaml`,
       'exec', '--',
@@ -160,7 +160,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
       '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
       '-b', github.context.ref,
       '-m', 'fix(tflint): auto fix',
-    ].concat(files), {
+    ].concat([...files]), {
       env: {
         ...process.env,
         GITHUB_TOKEN: inputs.githubTokenForFix,
