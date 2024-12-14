@@ -33,3 +33,10 @@ runs:
         enable_aqua_install: "false"
     - run: node dist/index.js
       shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        GH_TOKEN_FOR_TFLINT_INIT: ${{ inputs.github_token_for_tflint_init }}
+        GH_TOKEN_FOR_FIX: ${{ inputs.github_token_for_fix }}
+        WORKING_DIR: ${{ inputs.working_directory }}
+        IS_GH_COMMENT: ${{ inputs.github_comment }}
+        IS_FIX: ${{ inputs.fix }}

@@ -30245,12 +30245,12 @@ const core = __importStar(__nccwpck_require__(2186));
 const run_1 = __nccwpck_require__(7764);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, run_1.run)({
-        workingDirectory: core.getInput('working_directory', { required: false }),
-        githubToken: core.getInput('github_token', { required: true }),
-        githubTokenForTflintInit: core.getInput('github_token_for_tflint_init', { required: false }),
-        githubComment: core.getBooleanInput('github_comment', { required: true }),
-        githubTokenForFix: core.getInput('github_token_for_fix', { required: false }),
-        fix: core.getBooleanInput('fix', { required: true }),
+        workingDirectory: process.env.WORKING_DIR || "",
+        githubToken: process.env.GH_TOKEN || "",
+        githubTokenForTflintInit: process.env.GH_TOKEN_FOR_TFLINT_INIT || "",
+        githubTokenForFix: process.env.GH_TOKEN_FOR_FIX || "",
+        githubComment: process.env.IS_GH_COMMENT === "true",
+        fix: process.env.IS_FIX === "true",
     });
 });
 main().catch((e) => core.setFailed(e instanceof Error ? e.message : JSON.stringify(e)));
@@ -30361,6 +30361,9 @@ function generateTable(diagnostics) {
     return lines.join('\n');
 }
 const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!inputs.githubToken) {
+        throw new Error('github_token is required');
+    }
     if (!inputs.githubTokenForTflintInit) {
         inputs.githubTokenForTflintInit = inputs.githubToken;
     }

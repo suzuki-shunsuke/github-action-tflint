@@ -73,6 +73,9 @@ function generateTable(diagnostics: Array<Diagnostic>): string {
 }
 
 export const run = async (inputs: Inputs): Promise<void> => {
+  if (!inputs.githubToken) {
+    throw new Error('github_token is required');
+  }
   if (!inputs.githubTokenForTflintInit) {
     inputs.githubTokenForTflintInit = inputs.githubToken;
   }
