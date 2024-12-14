@@ -30249,7 +30249,6 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         githubToken: process.env.GH_TOKEN || "",
         githubTokenForTflintInit: process.env.GH_TOKEN_FOR_TFLINT_INIT || "",
         githubTokenForFix: process.env.GH_TOKEN_FOR_FIX || "",
-        githubComment: process.env.IS_GH_COMMENT === "true",
         fix: process.env.IS_FIX === "true",
     });
 });
@@ -30460,7 +30459,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
             throw new Error("code is fixed by tflint --fix");
         }
     }
-    if (inputs.githubComment && diagnostics.length > 0) {
+    if (diagnostics.length > 0) {
         const table = generateTable(diagnostics);
         const githubCommentTemplate = `## :x: tflint error
 

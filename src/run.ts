@@ -9,7 +9,6 @@ type Inputs = {
   githubToken: string
   githubTokenForTflintInit: string
   githubTokenForFix: string
-  githubComment: boolean
   fix: boolean
 }
 
@@ -180,7 +179,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     }
   }
 
-  if (inputs.githubComment && diagnostics.length > 0) {
+  if (diagnostics.length > 0) {
     const table = generateTable(diagnostics);
     const githubCommentTemplate = `## :x: tflint error
 
