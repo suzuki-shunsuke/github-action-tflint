@@ -30449,6 +30449,8 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
                 '-c', `${ghActionPath}/aqua/aqua.yaml`,
                 'exec', '--',
                 'github-comment', 'exec', '--',
+                'aqua', '-c', `${ghActionPath}/aqua/aqua.yaml`,
+                'exec', '--',
                 'ghcp', 'commit',
                 '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
                 '-b', github.context.ref,

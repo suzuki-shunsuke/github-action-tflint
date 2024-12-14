@@ -165,6 +165,8 @@ export const run = async (inputs: Inputs): Promise<void> => {
         '-c', `${ghActionPath}/aqua/aqua.yaml`,
         'exec', '--',
         'github-comment', 'exec', '--',
+        'aqua', '-c', `${ghActionPath}/aqua/aqua.yaml`,
+        'exec', '--',
         'ghcp', 'commit',
         '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
         '-b', github.context.ref,
