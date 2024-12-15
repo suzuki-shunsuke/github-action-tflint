@@ -56,6 +56,7 @@ This GitHub Actions does **not** install tflint, so we can install them outside 
     github_token_for_tflint_init: ${{ secrets.GH_TOKEN_FOR_TFLINT_INIT }}
     github_token_for_fix: ${{ secrets.GH_TOKEN_FOR_FIX }}
     working_directory: foo
+    github_comment: "true"
     fix: "true"
 ```
 
