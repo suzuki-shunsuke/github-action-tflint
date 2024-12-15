@@ -20,9 +20,10 @@ This GitHub Actions does **not** install tflint, so we can install them outside 
 
 ## Requirements
 
-* [tflint](https://github.com/terraform-linters/tflint)
-* [reviewdog](https://github.com/reviewdog/reviewdog)
-* (Optional) [github-comment](https://github.com/suzuki-shunsuke/github-comment)
+- [tflint](https://github.com/terraform-linters/tflint)
+- [reviewdog](https://github.com/reviewdog/reviewdog)
+- (Optional) [github-comment](https://github.com/suzuki-shunsuke/github-comment)
+- (Optional) [ghcp](https://github.com/int128/ghcp)
 
 ## Notification with reviewdog
 
@@ -70,7 +71,9 @@ name | default value | description
 --- | --- | ---
 github_token | `github.token` | GitHub Access Token
 github_token_for_tflint_init | `github_token` | GitHub Access Token for `tflint --init`. It this isn't set, the input `github_token` is used. This input is useful for a GitHub Enterprise Server
+github_token_for_fix | `github_token` | GitHub Access Token for `tflint --fix`. It this isn't set, the input `github_token` is used
 working_directory | "" (current directory) | Woring Directory
+github_comment | `false` | Whether a comment is posted with github-comment
 fix | false | If this is true, code is fixed by `tflint --fix`
 
 ## Outputs

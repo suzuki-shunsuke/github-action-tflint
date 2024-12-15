@@ -9,6 +9,7 @@ type Inputs = {
   githubToken: string
   githubTokenForTflintInit: string
   githubTokenForFix: string
+  githubComment: boolean
   fix: boolean
 }
 
@@ -162,13 +163,8 @@ export const run = async (inputs: Inputs): Promise<void> => {
     const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
     if (changedFiles.length !== 0) {
       const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
-      await exec.exec('aqua', [
-        '-c', `${ghActionPath}/aqua/aqua.yaml`,
-        'exec', '--',
-        'github-comment', 'exec', '--',
-        'aqua', '-c', `${ghActionPath}/aqua/aqua.yaml`,
-        'exec', '--',
-        'ghcp', 'commit',
+      await exec.exec('ghcp', [
+        'commit',
         '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
         '-b', branch,
         '-m', 'fix(tflint): auto fix',
@@ -182,7 +178,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
     }
   }
 
-  if (diagnostics.length > 0) {
+  if (inputs.githubComment && diagnostics.length > 0) {
     const table = generateTable(diagnostics);
     const githubCommentTemplate = `## :x: tflint error
 
@@ -191,10 +187,8 @@ export const run = async (inputs: Inputs): Promise<void> => {
 Working Directory: \`${inputs.workingDirectory}\`
 
 ${table}`;
-    await exec.exec('aqua', [
-      '-c', `${ghActionPath}/aqua/aqua.yaml`,
-      'exec', '--',
-      'github-comment', 'post', '-stdin-template',
+    await exec.exec('github-comment', [
+      'post', '-stdin-template',
     ], {
       input: Buffer.from(githubCommentTemplate),
       env: {
@@ -216,9 +210,6 @@ ${table}`;
   core.info('Running reviewdog');
 
   const reviewdogArgs = [
-    '-c', `${ghActionPath}/aqua/aqua.yaml`,
-    'exec', '--',
-    'reviewdog',
     '-f', 'rdjson',
     '-name', 'tflint',
     '-filter-mode', 'nofilter',
@@ -227,7 +218,7 @@ ${table}`;
     '-fail-level', 'error'
   ];
 
-  await exec.exec('aqua', reviewdogArgs, {
+  await exec.exec('reviewdog', reviewdogArgs, {
     input: Buffer.from(reviewDogInput),
     cwd: inputs.workingDirectory,
     env: {

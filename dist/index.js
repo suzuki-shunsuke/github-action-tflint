@@ -30245,11 +30245,12 @@ const core = __importStar(__nccwpck_require__(2186));
 const run_1 = __nccwpck_require__(7764);
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, run_1.run)({
-        workingDirectory: process.env.WORKING_DIR || "",
-        githubToken: process.env.GH_TOKEN || "",
-        githubTokenForTflintInit: process.env.GH_TOKEN_FOR_TFLINT_INIT || "",
-        githubTokenForFix: process.env.GH_TOKEN_FOR_FIX || "",
-        fix: process.env.IS_FIX === "true",
+        workingDirectory: core.getInput('working_directory', { required: false }),
+        githubToken: core.getInput('github_token', { required: true }),
+        githubTokenForTflintInit: core.getInput('github_token_for_tflint_init', { required: false }),
+        githubComment: core.getBooleanInput('github_comment', { required: true }),
+        githubTokenForFix: core.getInput('github_token_for_fix', { required: false }),
+        fix: core.getBooleanInput('fix', { required: true }),
     });
 });
 main().catch((e) => core.setFailed(e instanceof Error ? e.message : JSON.stringify(e)));
@@ -30446,13 +30447,8 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
         const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
         if (changedFiles.length !== 0) {
             const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
-            yield exec.exec('aqua', [
-                '-c', `${ghActionPath}/aqua/aqua.yaml`,
-                'exec', '--',
-                'github-comment', 'exec', '--',
-                'aqua', '-c', `${ghActionPath}/aqua/aqua.yaml`,
-                'exec', '--',
-                'ghcp', 'commit',
+            yield exec.exec('ghcp', [
+                'commit',
                 '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
                 '-b', branch,
                 '-m', 'fix(tflint): auto fix',
@@ -30462,7 +30458,7 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
             throw new Error("code is fixed by tflint --fix");
         }
     }
-    if (diagnostics.length > 0) {
+    if (inputs.githubComment && diagnostics.length > 0) {
         const table = generateTable(diagnostics);
         const githubCommentTemplate = `## :x: tflint error
 
@@ -30471,10 +30467,8 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
 Working Directory: \`${inputs.workingDirectory}\`
 
 ${table}`;
-        yield exec.exec('aqua', [
-            '-c', `${ghActionPath}/aqua/aqua.yaml`,
-            'exec', '--',
-            'github-comment', 'post', '-stdin-template',
+        yield exec.exec('github-comment', [
+            'post', '-stdin-template',
         ], {
             input: Buffer.from(githubCommentTemplate),
             env: Object.assign(Object.assign({}, process.env), { GITHUB_TOKEN: inputs.githubToken }),
@@ -30491,9 +30485,6 @@ ${table}`;
     core.info(`Reviewdog input: ${reviewDogInput}`);
     core.info('Running reviewdog');
     const reviewdogArgs = [
-        '-c', `${ghActionPath}/aqua/aqua.yaml`,
-        'exec', '--',
-        'reviewdog',
         '-f', 'rdjson',
         '-name', 'tflint',
         '-filter-mode', 'nofilter',
@@ -30501,7 +30492,7 @@ ${table}`;
         '-level', 'warning',
         '-fail-level', 'error'
     ];
-    yield exec.exec('aqua', reviewdogArgs, {
+    yield exec.exec('reviewdog', reviewdogArgs, {
         input: Buffer.from(reviewDogInput),
         cwd: inputs.workingDirectory,
         env: Object.assign(Object.assign({}, process.env), { REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken }),

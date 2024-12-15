@@ -16,7 +16,7 @@ inputs:
     required: false
     default: ""
   github_comment:
-    description: Deprecate. This option is ignored.
+    description: 'Whether a comment is posted with github-comment'
     required: false
     default: 'false'
   fix:
@@ -24,18 +24,5 @@ inputs:
     required: false
     default: 'false'
 runs:
-  using: composite
-  steps:
-    - uses: aquaproj/aqua-installer@f13c5d2f0357708d85477aabe50fd3f725528745 # v3.1.0
-      with:
-        aqua_version: v2.39.0
-        skip_install_aqua: "true"
-        enable_aqua_install: "false"
-    - run: node "$GITHUB_ACTION_PATH/dist/index.js"
-      shell: bash
-      env:
-        GH_TOKEN: ${{ inputs.github_token }}
-        GH_TOKEN_FOR_TFLINT_INIT: ${{ inputs.github_token_for_tflint_init }}
-        GH_TOKEN_FOR_FIX: ${{ inputs.github_token_for_fix }}
-        WORKING_DIR: ${{ inputs.working_directory }}
-        IS_FIX: ${{ inputs.fix }}
+  using: node20
+  main: dist/index.js
