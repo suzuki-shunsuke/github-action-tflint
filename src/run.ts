@@ -215,8 +215,17 @@ ${table}`;
     '-filter-mode', 'nofilter',
     '-reporter', reporter,
     '-level', 'warning',
-    '-fail-level', 'error'
   ];
+  const reviewdogHelp = await exec.getExecOutput('reviewdog', ['--help'], {
+    cwd: inputs.workingDirectory,
+    silent: true,
+    ignoreReturnCode: true,
+  });
+  if (reviewdogHelp.stdout.includes('-fail-level') || reviewdogHelp.stderr.includes('-fail-level')) {
+    reviewdogArgs.push('-fail-level', 'error');
+  } else {
+    reviewdogArgs.push('-fail-on-error', '1');
+  }
 
   await exec.exec('reviewdog', reviewdogArgs, {
     input: Buffer.from(reviewDogInput),
