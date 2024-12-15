@@ -30433,10 +30433,6 @@ const run = (inputs) => __awaiter(void 0, void 0, void 0, function* () {
             diagnostics.push(diagnostic);
         }
     }
-    const ghActionPath = process.env.GITHUB_ACTION_PATH;
-    if (ghActionPath === undefined) {
-        throw new Error('GITHUB_ACTION_PATH is not defined');
-    }
     if (inputs.fix) {
         const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
         const out = yield exec.getExecOutput('git', [
@@ -30490,8 +30486,18 @@ ${table}`;
         '-filter-mode', 'nofilter',
         '-reporter', reporter,
         '-level', 'warning',
-        '-fail-level', 'error'
     ];
+    const reviewdogHelp = yield exec.getExecOutput('reviewdog', ['--help'], {
+        cwd: inputs.workingDirectory,
+        silent: true,
+        ignoreReturnCode: true,
+    });
+    if (reviewdogHelp.stdout.includes('-fail-level') || reviewdogHelp.stderr.includes('-fail-level')) {
+        reviewdogArgs.push('-fail-level', 'error');
+    }
+    else {
+        reviewdogArgs.push('-fail-on-error', '1');
+    }
     yield exec.exec('reviewdog', reviewdogArgs, {
         input: Buffer.from(reviewDogInput),
         cwd: inputs.workingDirectory,

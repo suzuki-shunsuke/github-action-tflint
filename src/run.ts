@@ -149,10 +149,6 @@ export const run = async (inputs: Inputs): Promise<void> => {
       diagnostics.push(diagnostic);
     }
   }
-  const ghActionPath = process.env.GITHUB_ACTION_PATH;
-  if (ghActionPath === undefined) {
-    throw new Error('GITHUB_ACTION_PATH is not defined');
-  }
   if (inputs.fix) {
     const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
     const out = await exec.getExecOutput('git', [
