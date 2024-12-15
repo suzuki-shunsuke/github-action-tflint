@@ -8,7 +8,9 @@ type Inputs = {
   workingDirectory: string
   githubToken: string
   githubTokenForTflintInit: string
+  githubTokenForFix: string
   githubComment: boolean
+  fix: boolean
 }
 
 function getSeverity(s: string): string {
@@ -71,8 +73,14 @@ function generateTable(diagnostics: Array<Diagnostic>): string {
 }
 
 export const run = async (inputs: Inputs): Promise<void> => {
+  if (!inputs.githubToken) {
+    throw new Error('github_token is required');
+  }
   if (!inputs.githubTokenForTflintInit) {
     inputs.githubTokenForTflintInit = inputs.githubToken;
+  }
+  if (!inputs.githubTokenForFix) {
+    inputs.githubTokenForFix = inputs.githubToken;
   }
   core.info('Running tflint --init');
   await exec.exec('tflint', ['--init'], {
@@ -92,6 +100,9 @@ export const run = async (inputs: Inputs): Promise<void> => {
     args.push('--call-module-type=all');
   } else {
     args.push('--module');
+  }
+  if (inputs.fix) {
+    args.push('--fix');
   }
 
   core.info('Running tflint');
@@ -138,6 +149,30 @@ export const run = async (inputs: Inputs): Promise<void> => {
       diagnostics.push(diagnostic);
     }
   }
+  if (inputs.fix) {
+    const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
+    const out = await exec.getExecOutput('git', [
+      'diff', '--name-only',
+    ].concat([...files]), {
+      ignoreReturnCode: true,
+    });
+    const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
+    if (changedFiles.length !== 0) {
+      const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
+      await exec.exec('ghcp', [
+        'commit',
+        '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
+        '-b', branch,
+        '-m', 'fix(tflint): auto fix',
+      ].concat(changedFiles), {
+        env: {
+          ...process.env,
+          GITHUB_TOKEN: inputs.githubTokenForFix,
+        },
+      });
+      throw new Error("code is fixed by tflint --fix");
+    }
+  }
 
   if (inputs.githubComment && diagnostics.length > 0) {
     const table = generateTable(diagnostics);
@@ -148,7 +183,9 @@ export const run = async (inputs: Inputs): Promise<void> => {
 Working Directory: \`${inputs.workingDirectory}\`
 
 ${table}`;
-    await exec.exec('github-comment', ['post', '-stdin-template'], {
+    await exec.exec('github-comment', [
+      'post', '-stdin-template',
+    ], {
       input: Buffer.from(githubCommentTemplate),
       env: {
         ...process.env,
@@ -168,7 +205,13 @@ ${table}`;
   core.info(`Reviewdog input: ${reviewDogInput}`);
   core.info('Running reviewdog');
 
-  const reviewdogArgs = ['-f', 'rdjson', '-name', 'tflint', '-filter-mode', 'nofilter', '-reporter', reporter, '-level', 'warning'];
+  const reviewdogArgs = [
+    '-f', 'rdjson',
+    '-name', 'tflint',
+    '-filter-mode', 'nofilter',
+    '-reporter', reporter,
+    '-level', 'warning',
+  ];
   const reviewdogHelp = await exec.getExecOutput('reviewdog', ['--help'], {
     cwd: inputs.workingDirectory,
     silent: true,
@@ -189,6 +232,6 @@ ${table}`;
     },
   });
   if (out.exitCode != 0) {
-    throw "tflint failed";
+    throw new Error("tflint failed");
   }
 }
