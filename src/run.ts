@@ -152,12 +152,12 @@ export const run = async (inputs: Inputs): Promise<void> => {
   if (inputs.fix) {
     const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
     const out = await exec.getExecOutput('git', [
-      'diff', '--name-only',
+      'diff', '--name-only', '.',
     ].concat([...files]), {
       cwd: inputs.workingDirectory,
       ignoreReturnCode: true,
     });
-    const changedFiles = out.stdout.split('\n').filter(f => f.length > 0).map(f => path.join(inputs.workingDirectory, f));
+    const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
     if (changedFiles.length !== 0) {
       const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
       await exec.exec('ghcp', [
