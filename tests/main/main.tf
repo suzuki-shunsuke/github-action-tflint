@@ -1,4 +1,3 @@
-// foo
 resource "null_resource" "foo" {}
 
 terraform {
