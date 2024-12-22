@@ -151,10 +151,12 @@ export const run = async (inputs: Inputs): Promise<void> => {
   }
   if (inputs.fix) {
     const files = new Set(diagnostics.map((d) => path.join(inputs.workingDirectory, d.location.path)));
+    if (files.size == 0) {
+      return;
+    }
     const out = await exec.getExecOutput('git', [
-      'diff', '--name-only', '.',
+      'diff', '--name-only',
     ].concat([...files]), {
-      cwd: inputs.workingDirectory,
       ignoreReturnCode: true,
     });
     const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
