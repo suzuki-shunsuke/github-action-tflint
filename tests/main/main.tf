@@ -1,4 +1,4 @@
-# foo
+// foo
 resource "null_resource" "foo" {}
 
 terraform {
