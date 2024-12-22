@@ -21,7 +21,7 @@ jobs:
         with:
           aqua_version: v2.40.0
       - run: touch foo
-      - uses: suzuki-shunsuke/github-action-tflint
+      - uses: ./
         with:
           working_directory: tests/main
           github_comment: true
