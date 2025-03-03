@@ -7,7 +7,7 @@
     "@actions/exec": "1.1.1",
     "@actions/github": "6.0.0",
     "@vercel/ncc": "0.38.3",
-    "@types/node": "20.17.22"
+    "@types/node": "20.17.23"
   },
   "devDependencies": {
     "typescript": "5.8.2"
