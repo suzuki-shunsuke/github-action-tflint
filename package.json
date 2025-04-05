@@ -10,6 +10,6 @@
     "@types/node": "20.17.30"
   },
   "devDependencies": {
-    "typescript": "5.8.2"
+    "typescript": "5.8.3"
   }
 }
