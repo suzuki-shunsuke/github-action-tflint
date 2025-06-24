@@ -11,6 +11,7 @@ type Inputs = {
   githubTokenForFix: string
   githubComment: boolean
   fix: boolean
+  useSecurefixAction: boolean
 }
 
 function getSeverity(s: string): string {
@@ -161,6 +162,10 @@ export const run = async (inputs: Inputs): Promise<void> => {
     });
     const changedFiles = out.stdout.split('\n').filter(f => f.length > 0);
     if (changedFiles.length !== 0) {
+      core.setOutput('fixed_files', changedFiles.join('\n'));
+      if (!inputs.useSecurefixAction) {
+        return;
+      }
       const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
       await exec.exec('ghcp', [
         'commit',

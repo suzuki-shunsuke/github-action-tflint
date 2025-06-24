@@ -11,6 +11,19 @@ inputs:
   github_token_for_fix:
     description: GitHub Access Token for tflint --fix. If this input isn't set, github_token is used
     required: false
+
+  github_app_id_for_securefix_action:
+    description: |
+      GitHub App ID for Securefix Action
+      issues:write
+    required: false
+  github_app_private_key_for_securefix_action:
+    description: |
+      GitHub App Private Key for Securefix Action
+    required: false
+  securefix_action_server_repository:
+    description: 'Securefix Action Server Repository'
+    required: false
   working_directory:
     description: 'Working Directory'
     required: false
@@ -24,5 +37,25 @@ inputs:
     required: false
     default: 'false'
 runs:
-  using: node20
-  main: dist/index.js
+  using: composite
+  steps:
+    - uses: ./js
+      id: tflint
+      with:
+        github_token: ${{ inputs.github_token }}
+        github_token_for_tflint_init: ${{ inputs.github_token_for_tflint_init }}
+        github_token_for_fix: ${{ inputs.github_token_for_fix }}
+        working_directory: ${{ inputs.working_directory }}
+        github_comment: ${{ inputs.github_comment }}
+        fix: ${{ inputs.fix }}
+        use_securefix_action: ${{ inputs.securefix_action_server_repository != '' }}
+
+    - if: inputs.securefix_action_server_repository != '' && steps.tflint.outputs.fixed_files != ''
+      uses: csm-actions/securefix-action@pr/123
+      with:
+        app_id: ${{inputs.github_app_id_for_securefix_action}}
+        app_private_key: ${{inputs.github_app_private_key_for_securefix_action}}
+        server_repository: ${{ inputs.securefix_action_server_repository }}
+        commit_message: "fix(tflint): auto fix"
+        files: |
+          ${{ steps.tflint.outputs.fixed_files }}
