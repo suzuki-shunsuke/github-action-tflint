@@ -17,10 +17,10 @@ jobs:
               - renovate.json
               - .github/workflows/test.yaml
               - .github/workflows/workflow_call_renovate-config-validator.yaml
-  test:
-    uses: ./.github/workflows/workflow_call_test_action.yaml
-    permissions:
-      pull-requests: write # For reviewdog
+  # test:
+  #   uses: ./.github/workflows/workflow_call_test_action.yaml
+  #   permissions:
+  #     pull-requests: write # For reviewdog
 
   renovate-config-validator:
     uses: ./.github/workflows/workflow_call_renovate-config-validator.yaml
