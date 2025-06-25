@@ -18,10 +18,4 @@ jobs:
           GITHUB_TOKEN: ${{github.token}}
       - run: aqua upc -prune
       - run: git ls-files | xargs nllint -s -f
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run build
       - uses: suzuki-shunsuke/autofixci-action@a148ca710fd8bf5d9959d5d7604018ce8a77bad0 # v1.3.2-1
