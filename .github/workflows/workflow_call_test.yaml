@@ -28,3 +28,13 @@ jobs:
     if: needs.path-filter.outputs.renovate-config-validator == 'true'
     permissions:
       contents: read
+
+  create-pr-branch:
+    uses: ./.github/workflows/workflow_call_release.yaml
+    if: github.event.pull_request.user.login == 'suzuki-shunsuke'
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      version: pr/${{github.event.pull_request.number}}
+      pr: ${{github.event.pull_request.number}}
