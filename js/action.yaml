@@ -1,0 +1,32 @@
+name: tflint
+description: tflint action
+inputs:
+  github_token:
+    description: 'GitHub Access Token'
+    required: false
+    default: ${{ github.token }}
+  github_token_for_tflint_init:
+    description: GitHub Access Token for tflint --init. If this input isn't set, github_token is used
+    required: false
+  github_token_for_fix:
+    description: GitHub Access Token for tflint --fix. If this input isn't set, github_token is used
+    required: false
+  working_directory:
+    description: 'Working Directory'
+    required: false
+    default: ""
+  github_comment:
+    description: 'Whether a comment is posted with github-comment'
+    required: false
+    default: 'false'
+  fix:
+    description: If this is true, tflint --fix is executed
+    required: false
+    default: 'false'
+  use_securefix_action:
+    description: If this is true, securefix action is used
+    required: false
+    default: 'false'
+runs:
+  using: node20
+  main: dist/index.js

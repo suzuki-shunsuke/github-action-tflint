@@ -1,0 +1,21 @@
+---
+name: Release
+run-name: Release ${{inputs.version}}
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version
+        required: true
+      pr:
+        description: "pr number (pre-release)"
+        required: false
+jobs:
+  release:
+    uses: ./.github/workflows/workflow_call_release.yaml
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      version: ${{inputs.version}}
+      pr: ${{inputs.pr}}

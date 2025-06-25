@@ -82,10 +82,50 @@ github_token_for_fix | `github_token` | GitHub Access Token for `tflint --fix`. 
 working_directory | "" (current directory) | Woring Directory
 github_comment | `false` | Whether a comment is posted with github-comment
 fix | false | If this is true, code is fixed by `tflint --fix`. ghcp is required for this
+github_app_id_for_securefix_action | | GitHub App ID for Securefix Action's client app
+github_app_private_key_for_securefix_action | | GitHub App Private Key for Securefix Action's client app
+securefix_action_server_repository | | Securefix Action Server Repository name (not full name)
 
 ## Outputs
 
 Nothing.
+
+## Available versions
+
+As of v1.3.0, the available versions were changed.
+
+> [!CAUTION]
+> We don't add `dist/*.js` in the main branch and feature branches.
+> So you can't specify `main` and feature branches as versions.
+>
+> ```yaml
+> # This never works as dist/index.js doesn't exist.
+> uses: suzuki-shunsuke/github-action-tflint@main
+> ```
+
+The following versions are available.
+
+1. [Release versions](https://github.com/suzuki-shunsuke/github-action-tflint/releases)
+
+```yaml
+uses: suzuki-shunsuke/github-action-tflint@v0.1.1
+```
+
+2. [Pull Request versions](https://github.com/suzuki-shunsuke/github-action-tflint/branches/all?query=pr%2F&lastTab=overview): These versions are removed when we feel unnecessary. These versions are used to test pull requests.
+
+```yaml
+uses: suzuki-shunsuke/github-action-tflint@pr/1473
+```
+
+3. [latest branch](https://github.com/suzuki-shunsuke/github-action-tflint/tree/latest): [This branch is built by CI when the main branch is updated](https://github.com/suzuki-shunsuke/github-action-tflint/blob/latest/.github/workflows/main.yaml). Note that we push commits to the latest branch forcibly.
+
+```yaml
+uses: suzuki-shunsuke/github-action-tflint@latest
+```
+
+Pull Request versions and the latest branch are unstable.
+These versions are for testing.
+You should use the latest release version in production.
 
 ## License
 
