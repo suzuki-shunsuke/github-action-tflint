@@ -6,7 +6,7 @@ on:
       pr:
         description: "Pull Request Number"
         required: false
-        type: number
+        type: string
       version:
         description: Version
         required: true
@@ -37,7 +37,7 @@ jobs:
       - run: npm run build
         working-directory: js
 
-      - uses: suzuki-shunsuke/release-js-action@0c8995bef6136b89f294badd3f6b1f2615f7ba56 # v0.1.7
+      - uses: suzuki-shunsuke/release-js-action@23ab6d1545309c79664bc0e9aea74daf27339193 # v0.1.8-2
         with:
           version: ${{inputs.version}}
           is_comment: ${{inputs.is_comment}}
