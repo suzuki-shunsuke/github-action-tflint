@@ -1,10 +1,10 @@
 ---
 name: Release
-run-name: Release ${{inputs.version}}
+run-name: Release ${{inputs.tag}}
 on:
   workflow_dispatch:
     inputs:
-      version:
+      tag:
         description: version
         required: true
       pr:
@@ -17,5 +17,5 @@ jobs:
       contents: write
       pull-requests: write
     with:
-      version: ${{inputs.version}}
+      version: ${{inputs.tag}}
       pr: ${{inputs.pr}}
