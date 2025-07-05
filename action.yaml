@@ -12,15 +12,16 @@ inputs:
     description: GitHub Access Token for tflint --fix. If this input isn't set, github_token is used
     required: false
 
-  github_app_id_for_securefix_action:
-    description: |
-      GitHub App ID for Securefix Action
-      issues:write
+  securefix_action_app_id:
     required: false
-  github_app_private_key_for_securefix_action:
+    default: ''
     description: |
-      GitHub App Private Key for Securefix Action
+      The GitHub App ID for the Securefix Action client.
+  securefix_action_app_private_key:
     required: false
+    default: ''
+    description: |
+      The GitHub App private key for the Securefix Action client.
   securefix_action_server_repository:
     description: 'Securefix Action Server Repository'
     required: false
@@ -53,9 +54,9 @@ runs:
     - if: inputs.securefix_action_server_repository != '' && steps.tflint.outputs.fixed_files != ''
       uses: csm-actions/securefix-action@93104f33820be53834509335ed722a209d3714f3 # v0.1.1-0
       with:
-        app_id: ${{inputs.github_app_id_for_securefix_action}}
-        app_private_key: ${{inputs.github_app_private_key_for_securefix_action}}
-        server_repository: ${{ inputs.securefix_action_server_repository }}
+        app_id: ${{inputs.securefix_action_app_id}}
+        app_private_key: ${{inputs.securefix_action_app_private_key}}
+        server_repository: ${{inputs.securefix_action_server_repository}}
         commit_message: "fix(tflint): auto fix"
         files: |
           ${{ steps.tflint.outputs.fixed_files }}
