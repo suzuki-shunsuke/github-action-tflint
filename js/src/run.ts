@@ -109,12 +109,10 @@ export const run = async (inputs: Inputs): Promise<void> => {
     args.push('--fix');
   }
 
-  core.startGroup('tflint');
   const out = await exec.getExecOutput('tflint', args, {
     cwd: inputs.workingDirectory,
     ignoreReturnCode: true,
   });
-  core.endGroup();
   core.info('Parsing tflint result');
   const outJSON = JSON.parse(out.stdout);
   const diagnostics = new Array<Diagnostic>();
