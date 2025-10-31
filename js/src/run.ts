@@ -83,7 +83,8 @@ export const run = async (inputs: Inputs): Promise<void> => {
   if (!inputs.githubTokenForFix) {
     inputs.githubTokenForFix = inputs.githubToken;
   }
-  core.info('Running tflint --init');
+
+  core.startGroup('tflint --init');
   await exec.exec('tflint', ['--init'], {
     cwd: inputs.workingDirectory,
     env: {
@@ -91,6 +92,8 @@ export const run = async (inputs: Inputs): Promise<void> => {
       GITHUB_TOKEN: inputs.githubTokenForTflintInit,
     },
   });
+  core.endGroup();
+
   const args = ['--format', 'json'];
 
   const help = await exec.getExecOutput('tflint', ['--help'], {
@@ -106,7 +109,6 @@ export const run = async (inputs: Inputs): Promise<void> => {
     args.push('--fix');
   }
 
-  core.info('Running tflint');
   const out = await exec.getExecOutput('tflint', args, {
     cwd: inputs.workingDirectory,
     ignoreReturnCode: true,
@@ -167,6 +169,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
         return;
       }
       const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF || "";
+      core.startGroup('ghcp commit');
       await exec.exec('ghcp', [
         'commit',
         '-r', `${github.context.repo.owner}/${github.context.repo.repo}`,
@@ -178,6 +181,7 @@ export const run = async (inputs: Inputs): Promise<void> => {
           GITHUB_TOKEN: inputs.githubTokenForFix,
         },
       });
+      core.endGroup();
       throw new Error("code is fixed by tflint --fix");
     }
   }
@@ -231,6 +235,7 @@ ${table}`;
     reviewdogArgs.push('-fail-on-error', '1');
   }
 
+  core.startGroup('reviewdog');
   await exec.exec('reviewdog', reviewdogArgs, {
     input: Buffer.from(reviewDogInput),
     cwd: inputs.workingDirectory,
@@ -239,6 +244,7 @@ ${table}`;
       REVIEWDOG_GITHUB_API_TOKEN: inputs.githubToken,
     },
   });
+  core.endGroup();
   if (out.exitCode != 0) {
     throw new Error("tflint failed");
   }
