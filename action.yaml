@@ -40,7 +40,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: suzuki-shunsuke/github-action-tflint/js@main
+    - uses: suzuki-shunsuke/github-action-tflint/js@3ac3eeb6276d45a4481a97365d40f03e596335c8
       id: tflint
       with:
         github_token: ${{ inputs.github_token }}
