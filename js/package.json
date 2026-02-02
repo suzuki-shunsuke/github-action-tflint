@@ -3,7 +3,7 @@
     "build": "ncc build src/index.ts --license LICENSE"
   },
   "dependencies": {
-    "@actions/core": "1.11.1",
+    "@actions/core": "3.0.0",
     "@actions/exec": "1.1.1",
     "@actions/github": "6.0.1",
     "@vercel/ncc": "0.38.4",
